@@ -1,0 +1,11 @@
+# Ignore data and model files
+data/
+models/
+*.pkl
+__pycache__/
+*.py[cod]
+
+# OS-specific and editor files
+.DS_Store
+.vscode/
+.idea/
