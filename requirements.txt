@@ -4,3 +4,8 @@ scikit-learn
 matplotlib
 jupyter
 torch
+tensorflow
+
+lightgbm
+scipy
+joblib
