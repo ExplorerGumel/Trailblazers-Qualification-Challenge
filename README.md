@@ -20,26 +20,48 @@ conda install -c conda-forge lightgbm
 
 ## Files
 
-- `main.py` - Original project training pipeline.
-- `train_improved.py` - Improved ensemble training and experiments (scikit-learn + LightGBM).
-- `run_quick.py` - Quick runner that invokes the improved pipeline.
-- `scripts/` - CLI wrappers for convenience.
+- `main.py` - Original neural network training pipeline using TensorFlow/Keras.
+- `train_improved.py` - Experimental tree-based model pipeline with ensemble and tuning support.
+- `run_quick.py` - Convenience wrapper for running the improved tree-based pipeline.
+- `src/tree_pipeline.py` - Shared tree-based experiment module for HistGradientBoosting, RandomForest, and optional LightGBM.
+- `scripts/` - CLI wrappers for convenience and reproducible execution.
 - `src/` - Refactored internal modules (`data.py`, `features.py`, `models.py`, `utils.py`, `config.py`).
 - `requirements.txt` - Python dependencies.
 - `tests/` - Unit tests (run with `pytest`).
 
 ## Run
 
-Train with the improved script (uses local data):
+### Neural network workflow
+
+This pipeline is designed for the original deep learning experiment:
+
+```powershell
+python main.py --train_path "C:\Users\Administrator\Downloads\Data\Train.csv" --test_path "C:\Users\Administrator\Downloads\Data\Test.csv"
+```
+
+### Tree-based experiment workflow
+
+This pipeline showcases tree model experimentation with gradient boosting, random forest, and optional LightGBM support:
 
 ```powershell
 python train_improved.py --train "C:\Users\Administrator\Downloads\Data\Train.csv"
 ```
 
-Run the original pipeline:
+If LightGBM is installed, it will be included in the candidate model set automatically.
 
-```powershell
-python main.py --train_path "C:\Users\Administrator\Downloads\Data\Train.csv" --test_path "C:\Users\Administrator\Downloads\Data\Test.csv"
+### Package-style invocation
+
+If you want to import the shared modules in `src/`:
+
+```python
+from src import run_tree_experiment
+
+result = run_tree_experiment(
+    train_path='data/raw/Train.csv',
+    target_col='target',
+    output_dir='models'
+)
+print(result)
 ```
 
 ## CI
