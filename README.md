@@ -64,6 +64,17 @@ result = run_tree_experiment(
 print(result)
 ```
 
+### Wrapper scripts
+
+Use the script wrappers for reproducible, command-line-friendly execution.
+
+```powershell
+python scripts/train_improved.py --train "C:\Users\Administrator\Downloads\Data\Train.csv"
+python scripts/run_quick.py --train "C:\Users\Administrator\Downloads\Data\Train.csv"
+```
+
+`train_improved.py` is the main experiment entrypoint, while `run_quick.py` is a lightweight convenience wrapper.
+
 ## CI
 
 A GitHub Actions workflow is included at `.github/workflows/python-app.yml`. It installs dependencies and runs tests via `pytest`.
