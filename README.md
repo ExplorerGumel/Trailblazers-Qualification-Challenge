@@ -1,87 +1,73 @@
 # Trailblazers Qualification Challenge
 
-This repository contains a regression model training pipeline and helper scripts for the Trailblazers qualification challenge.
+A reproducible tabular-regression project for the Trailblazers qualification challenge.
+
+## What is included
+
+- A tree-based training pipeline with train-only preprocessing, validation metrics, and persisted inference artifacts.
+- An optional TensorFlow/Keras neural-network workflow in `main.py`.
+- Unit tests and GitHub Actions CI for the lightweight tree workflow.
 
 ## Setup
 
-1. Install Miniconda (recommended) and create the environment:
+Create an environment with Python 3.10 or 3.11, then install the training dependencies:
 
 ```powershell
-conda create -n trailblazers python=3.11 -y
-conda activate trailblazers
 pip install -r requirements.txt
 ```
 
-2. (Optional) If you prefer conda packages for heavy ML libs:
+For the fast CI/test dependency set only:
 
 ```powershell
-conda install -c conda-forge lightgbm
+pip install -r requirements-ci.txt
 ```
 
-## Files
+## Train a tree model
 
-- `main.py` - Original neural network training pipeline using TensorFlow/Keras.
-- `train_improved.py` - Experimental tree-based model pipeline with ensemble and tuning support.
-- `run_quick.py` - Convenience wrapper for running the improved tree-based pipeline.
-- `src/tree_pipeline.py` - Shared tree-based experiment module for HistGradientBoosting, RandomForest, and optional LightGBM.
-- `scripts/` - CLI wrappers for convenience and reproducible execution.
-- `src/` - Refactored internal modules (`data.py`, `features.py`, `models.py`, `utils.py`, `config.py`).
-- `requirements.txt` - Python dependencies.
-- `tests/` - Unit tests (run with `pytest`).
-
-## Run
-
-### Neural network workflow
-
-This pipeline is designed for the original deep learning experiment:
+The supported training entry point is:
 
 ```powershell
-python main.py --train_path "C:\Users\Administrator\Downloads\Data\Train.csv" --test_path "C:\Users\Administrator\Downloads\Data\Test.csv"
+python train_improved.py --train data/raw/Train.csv --target-col target --output-dir models
 ```
 
-### Tree-based experiment workflow
+Add `--no-tune` to skip randomized hyperparameter search. The run reports R², MAE, and RMSE on a held-out validation split and saves one self-contained artifact:
 
-This pipeline showcases tree model experimentation with gradient boosting, random forest, and optional LightGBM support:
-
-```powershell
-python train_improved.py --train "C:\Users\Administrator\Downloads\Data\Train.csv"
+```text
+models/tree_regressor.joblib
 ```
 
-If LightGBM is installed, it will be included in the candidate model set automatically.
+The artifact includes the fitted model, feature order, missing-value statistics, and categorical encodings. Preprocessing is fit only on the training split, preventing validation leakage.
 
-### Package-style invocation
+## Inference
 
-If you want to import the shared modules in `src/`:
+Use the saved artifact with a CSV that contains the original feature columns (the target column is not required):
 
 ```python
-from src import run_tree_experiment
+from src.tree_pipeline import predict_tree_data
 
-result = run_tree_experiment(
-    train_path='data/raw/Train.csv',
-    target_col='target',
-    output_dir='models'
+predictions = predict_tree_data(
+    "models/tree_regressor.joblib",
+    "data/raw/Test.csv",
 )
-print(result)
 ```
 
-### Wrapper scripts
+Unseen categorical values are encoded safely and missing required feature columns produce a clear error.
 
-Use the script wrappers for reproducible, command-line-friendly execution.
+## Test and lint
 
 ```powershell
-python scripts/train_improved.py --train "C:\Users\Administrator\Downloads\Data\Train.csv"
-python scripts/run_quick.py --train "C:\Users\Administrator\Downloads\Data\Train.csv"
+ruff check src tests
+pytest -q
 ```
 
-`train_improved.py` is the main experiment entrypoint, while `run_quick.py` is a lightweight convenience wrapper.
+The GitHub Actions workflow runs the same syntax, import, lint, and test checks on Python 3.10 and 3.11.
 
-## CI
+## Neural-network workflow
 
-A GitHub Actions workflow is included at `.github/workflows/python-app.yml`. It installs dependencies and runs tests via `pytest`.
+`main.py` remains available for the original TensorFlow/Keras experiment:
 
-## Notes
+```powershell
+python main.py --train_path data/raw/Train.csv --test_path data/raw/Test.csv
+```
 
-- Large data and model artifacts are ignored by `.gitignore`.
-- If you want the CI to run the full training, modify the workflow to use smaller sample data or set resource/time limits.
-
-If you'd like, I can make the CI run a lightweight smoke test instead of full `pytest`, or expand the README with examples and badges.
+It requires TensorFlow, which is included in the full `requirements.txt` environment.
